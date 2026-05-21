@@ -1,1 +1,945 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>المسبحة الإلكترونية الذكية</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
+        body {
+            background: #0a0a0a;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', 'Noto Sans Arabic', 'Droid Arabic Kufi', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            color: #e0e0e0;
+        }
+
+        /* OLED Display Panel */
+        #display-panel {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            margin-top: 15px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+        }
+
+        .display-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 6px 0;
+            flex-direction: row-reverse;
+        }
+
+        .display-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+        }
+
+        .display-value {
+            font-family: 'Courier New', 'Noto Sans Arabic', monospace;
+            font-size: 16px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        #main-counter {
+            font-size: 56px;
+            font-weight: 200;
+            color: #00ff88;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+            margin: 8px 0;
+            font-variant-numeric: tabular-nums;
+            font-family: 'Courier New', monospace;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00ff88;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        /* Dhikr Display Area - SEPARATE from button */
+        #dhikr-display {
+            margin: 15px 0 10px 0;
+            text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #dhikr-word {
+            font-size: 28px;
+            color: #fff;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans Arabic', 'Droid Arabic Kufi', 'Segoe UI', sans-serif;
+        }
+
+        #dhikr-word.pulse {
+            animation: textPulse 0.3s ease;
+        }
+
+        @keyframes textPulse {
+            0% { transform: scale(1); color: #fff; }
+            50% { transform: scale(1.1); color: #00ff88; }
+            100% { transform: scale(1); color: #fff; }
+        }
+
+        #dhikr-meaning {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Mode Selector */
+        #mode-selector {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 0 20px;
+            overflow-x: auto;
+            max-width: 100%;
+            scrollbar-width: none;
+            flex-direction: row-reverse;
+        }
+
+        #mode-selector::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            font-family: 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+        }
+
+        .mode-btn.active {
+            background: #00ff88;
+            color: #000;
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            font-weight: bold;
+        }
+
+        /* Main Bead - SMALLER and more elegant */
+        #bead-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        #main-bead {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #2a2a2a, #0a0a0a);
+            border: 2px solid #333;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 
+                0 8px 30px rgba(0,0,0,0.8),
+                inset 0 2px 8px rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        #main-bead:active {
+            transform: scale(0.92);
+            background: radial-gradient(circle at 35% 35%, #1a1a1a, #050505);
+            box-shadow: 
+                0 4px 15px rgba(0,0,0,0.9),
+                inset 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        #main-bead::before {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 1px solid #222;
+            pointer-events: none;
+        }
+
+        #main-bead::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 1px solid #1a1a1a;
+            pointer-events: none;
+        }
+
+        .bead-icon {
+            font-size: 32px;
+            opacity: 0.4;
+            pointer-events: none;
+            color: #00ff88;
+        }
+
+        /* Tap hint */
+        #tap-hint {
+            font-size: 11px;
+            color: #444;
+            margin-top: 12px;
+            letter-spacing: 1px;
+        }
+
+        /* Ripple Effect - scaled for smaller button */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid #00ff88;
+            animation: rippleOut 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes rippleOut {
+            from {
+                width: 120px;
+                height: 120px;
+                opacity: 0.5;
+            }
+            to {
+                width: 250px;
+                height: 250px;
+                opacity: 0;
+            }
+        }
+
+        /* Control Buttons */
+        #controls {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            flex-direction: row-reverse;
+        }
+
+        .ctrl-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ctrl-btn:active {
+            background: #2a2a2a;
+            transform: scale(0.95);
+        }
+
+        .ctrl-btn.danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .ctrl-btn.danger:active {
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        /* Vibration Indicator */
+        #vibro-indicator {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 10px;
+            color: #00ff88;
+            opacity: 0;
+            transition: opacity 0.2s;
+            letter-spacing: 2px;
+        }
+
+        #vibro-indicator.active {
+            opacity: 1;
+        }
+
+        /* Session Timer */
+        #session-time {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 11px;
+            color: #444;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* Particle Effect */
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #00ff88;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 1s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            to {
+                transform: translateY(-80px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Settings Modal */
+        #settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        #settings-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .modal-title {
+            color: #00ff88;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a1a;
+            flex-direction: row-reverse;
+        }
+
+        .setting-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            width: 46px;
+            height: 24px;
+            background: #333;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: #00ff88;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            right: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active::after {
+            transform: translateX(-22px);
+        }
+
+        .close-modal {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            font-family: 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+        }
+
+        /* Sound Wave Animation */
+        .sound-wave {
+            position: absolute;
+            bottom: 80px;
+            display: flex;
+            gap: 3px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            flex-direction: row-reverse;
+        }
+
+        .sound-wave.active {
+            opacity: 1;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: #00ff88;
+            border-radius: 2px;
+            animation: wave 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes wave {
+            from { height: 5px; }
+            to { height: 20px; }
+        }
+
+        /* Completion Animation */
+        @keyframes completionPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
+        }
+
+        .completion {
+            animation: completionPulse 1s ease-in-out 3;
+        }
+
+        /* Round completion subtle notification */
+        #round-complete {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            color: #ffd700;
+            opacity: 0;
+            pointer-events: none;
+            letter-spacing: 2px;
+            transition: all 0.5s;
+        }
+
+        #round-complete.show {
+            opacity: 1;
+            transform: translate(-50%, -80%);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Session Timer -->
+    <div id="session-time">00:00:00</div>
+
+    <!-- Vibration Indicator -->
+    <div id="vibro-indicator">◉ اهتزاز</div>
+
+    <!-- OLED Display Panel -->
+    <div id="display-panel">
+        <div class="display-row">
+            <span class="display-label">العدد الحالي</span>
+            <span class="display-value" id="round-display">٠ / ٣٣</span>
+        </div>
+        <div id="main-counter">٠</div>
+        <div class="display-row">
+            <span class="display-label">الختمات المكتملة</span>
+            <span class="display-value" id="total-display">٠</span>
+        </div>
+        <div class="display-row">
+            <span class="display-label">الهدف</span>
+            <span class="display-value" id="target-display">٩٩</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-bar" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Dhikr Display - SEPARATE from button -->
+    <div id="dhikr-display">
+        <div>
+            <div id="dhikr-word">سبحان الله</div>
+            <div id="dhikr-meaning">سبحان الله وبحمده</div>
+        </div>
+    </div>
+
+    <!-- Round Complete Notification -->
+    <div id="round-complete">✦ ختمة مكتملة ✦</div>
+
+    <!-- Mode Selector -->
+    <div id="mode-selector">
+        <button class="mode-btn active" data-mode="tasbih" data-target="99" data-round="33" data-dhikr="سبحان الله" data-meaning="سبحان الله وبحمده">تسبيح</button>
+        <button class="mode-btn" data-mode="tahmid" data-target="100" data-round="33" data-dhikr="الحمد لله" data-meaning="الحمد لله رب العالمين">تحميد</button>
+        <button class="mode-btn" data-mode="takbir" data-target="100" data-round="34" data-dhikr="الله أكبر" data-meaning="الله أكبر ولله الحمد">تكبير</button>
+        <button class="mode-btn" data-mode="tahlil" data-target="100" data-round="33" data-dhikr="لا إله إلا الله" data-meaning="لا إله إلا الله وحده لا شريك له">تهليل</button>
+        <button class="mode-btn" data-mode="salat" data-target="100" data-round="33" data-dhikr="اللهم صل وسلم" data-meaning="اللهم صل وسلم على نبينا محمد">صلاة</button>
+        <button class="mode-btn" data-mode="istighfar" data-target="100" data-round="33" data-dhikr="أستغفر الله" data-meaning="أستغفر الله العظيم من كل ذنب">استغفار</button>
+        <button class="mode-btn" data-mode="custom" data-target="1000" data-round="100" data-dhikr="الذكر المختار" data-meaning="adhkar">مخصص</button>
+    </div>
+
+    <!-- Main Bead - SMALLER -->
+    <div id="bead-container">
+        <div id="main-bead">
+            <span class="bead-icon">۞</span>
+        </div>
+        <div id="tap-hint">انقر للعد</div>
+        <div class="sound-wave" id="sound-wave">
+            <div class="wave-bar" style="animation-delay: 0s"></div>
+            <div class="wave-bar" style="animation-delay: 0.1s"></div>
+            <div class="wave-bar" style="animation-delay: 0.2s"></div>
+            <div class="wave-bar" style="animation-delay: 0.3s"></div>
+            <div class="wave-bar" style="animation-delay: 0.4s"></div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+        <button class="ctrl-btn" id="btn-undo" title="تراجع">↶</button>
+        <button class="ctrl-btn" id="btn-settings" title="الإعدادات">⚙</button>
+        <button class="ctrl-btn danger" id="btn-reset" title="إعادة">↻</button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-title">إعدادات الجهاز</div>
+            
+            <div class="setting-row">
+                <span class="setting-label">الاهتزاز</span>
+                <div class="toggle active" id="toggle-vibro"></div>
+            </div>
+            
+            <div class="setting-row">
+                <span class="setting-label">الصوت</span>
+                <div class="toggle active" id="toggle-sound"></div>
+            </div>
+            
+            <div class="setting-row">
+                <span class="setting-label">الإضاءة</span>
+                <div class="toggle" id="toggle-led"></div>
+            </div>
+            
+            <div class="setting-row">
+                <span class="setting-label">إبقاء الشاشة مضيئة</span>
+                <div class="toggle active" id="toggle-lock"></div>
+            </div>
+            
+            <div class="setting-row">
+                <span class="setting-label">تأثير الجسيمات</span>
+                <div class="toggle active" id="toggle-particles"></div>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">عرض المعنى</span>
+                <div class="toggle active" id="toggle-meaning"></div>
+            </div>
+
+            <button class="close-modal" id="btn-close-settings">تم</button>
+        </div>
+    </div>
+
+    <script>
+        // Arabic Numerals Conversion
+        const toArabicNums = (num) => {
+            const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return num.toString().split('').map(d => arabicDigits[parseInt(d)] || d).join('');
+        };
+
+        // State
+        const state = {
+            count: 0,
+            totalCompleted: 0,
+            currentRound: 0,
+            target: 99,
+            roundSize: 33,
+            mode: 'tasbih',
+            dhikr: 'سبحان الله',
+            meaning: 'سبحان الله وبحمده',
+            settings: {
+                haptic: true,
+                sound: true,
+                led: false,
+                lock: true,
+                particles: true,
+                meaning: true
+            },
+            history: [],
+            sessionStart: Date.now()
+        };
+
+        // DOM Elements
+        const mainCounter = document.getElementById('main-counter');
+        const roundDisplay = document.getElementById('round-display');
+        const totalDisplay = document.getElementById('total-display');
+        const targetDisplay = document.getElementById('target-display');
+        const progressBar = document.getElementById('progress-bar');
+        const mainBead = document.getElementById('main-bead');
+        const vibroIndicator = document.getElementById('vibro-indicator');
+        const soundWave = document.getElementById('sound-wave');
+        const sessionTime = document.getElementById('session-time');
+        const dhikrWord = document.getElementById('dhikr-word');
+        const dhikrMeaning = document.getElementById('dhikr-meaning');
+        const roundComplete = document.getElementById('round-complete');
+
+        // Audio Context for click sound
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playClickSound() {
+            if (!state.settings.sound || !audioCtx) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // Haptic Feedback
+        function triggerHaptic() {
+            if (!state.settings.haptic) return;
+            
+            if (navigator.vibrate) {
+                navigator.vibrate(15);
+            }
+            
+            vibroIndicator.classList.add('active');
+            setTimeout(() => vibroIndicator.classList.remove('active'), 200);
+        }
+
+        // LED Flash
+        function triggerLED() {
+            if (!state.settings.led) return;
+            
+            const flash = document.createElement('div');
+            flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#00ff88;opacity:0.3;pointer-events:none;z-index:999;transition:opacity 0.1s;';
+            document.body.appendChild(flash);
+            
+            requestAnimationFrame(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 100);
+            });
+        }
+
+        // Particle Effect
+        function spawnParticles(x, y) {
+            if (!state.settings.particles) return;
+            
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + (Math.random() - 0.5) * 30 + 'px';
+                particle.style.top = y + (Math.random() - 0.5) * 30 + 'px';
+                particle.style.animationDelay = Math.random() * 0.2 + 's';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        // Ripple Effect
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = x - 60 + 'px';
+            ripple.style.top = y - 60 + 'px';
+            mainBead.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        // Update Dhikr Display
+        function updateDhikrDisplay() {
+            dhikrWord.textContent = state.dhikr;
+            if (state.settings.meaning) {
+                dhikrMeaning.textContent = state.meaning;
+                dhikrMeaning.style.display = 'block';
+            } else {
+                dhikrMeaning.style.display = 'none';
+            }
+        }
+
+        // Pulse Dhikr Text
+        function pulseDhikr() {
+            dhikrWord.classList.remove('pulse');
+            void dhikrWord.offsetWidth; // Trigger reflow
+            dhikrWord.classList.add('pulse');
+        }
+
+        // Show Round Complete
+        function showRoundComplete() {
+            roundComplete.classList.add('show');
+            setTimeout(() => roundComplete.classList.remove('show'), 2000);
+        }
+
+        // Update Display
+        function updateDisplay() {
+            mainCounter.textContent = toArabicNums(state.count);
+            roundDisplay.textContent = `${toArabicNums(state.currentRound)} / ${toArabicNums(state.roundSize)}`;
+            totalDisplay.textContent = toArabicNums(state.totalCompleted);
+            targetDisplay.textContent = toArabicNums(state.target);
+            
+            const progress = (state.count / state.target) * 100;
+            progressBar.style.width = Math.min(progress, 100) + '%';
+            
+            if (state.count >= state.target) {
+                mainCounter.style.color = '#ffd700';
+                progressBar.style.background = '#ffd700';
+                progressBar.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+            } else {
+                mainCounter.style.color = '#00ff88';
+                progressBar.style.background = '#00ff88';
+                progressBar.style.boxShadow = '0 0 10px rgba(0, 255, 136, 0.5)';
+            }
+        }
+
+        // Increment Counter
+        function increment(e) {
+            initAudio();
+            
+            state.history.push({...state});
+            if (state.history.length > 50) state.history.shift();
+            
+            state.count++;
+            state.currentRound = ((state.count - 1) % state.roundSize) + 1;
+            
+            // Check round completion
+            if (state.currentRound === state.roundSize) {
+                showRoundComplete();
+            }
+            
+            // Check full completion
+            if (state.count >= state.target) {
+                state.totalCompleted++;
+                triggerCompletion();
+            }
+            
+            // Visual feedback
+            if (e) {
+                const rect = mainBead.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                createRipple(rect.width / 2, rect.height / 2);
+                spawnParticles(x, y);
+            }
+            
+            pulseDhikr();
+            triggerHaptic();
+            playClickSound();
+            triggerLED();
+            
+            updateDisplay();
+        }
+
+        // Completion Animation
+        function triggerCompletion() {
+            mainBead.classList.add('completion');
+            soundWave.classList.add('active');
+            
+            if (audioCtx) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = 1200;
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+            
+            setTimeout(() => {
+                mainBead.classList.remove('completion');
+                soundWave.classList.remove('active');
+            }, 3000);
+        }
+
+        // Undo
+        function undo() {
+            if (state.history.length === 0) return;
+            const prev = state.history.pop();
+            state.count = prev.count;
+            state.currentRound = prev.currentRound;
+            state.totalCompleted = prev.totalCompleted;
+            state.dhikr = prev.dhikr;
+            state.meaning = prev.meaning;
+            updateDhikrDisplay();
+            updateDisplay();
+        }
+
+        // Reset
+        function reset() {
+            if (confirm('هل تريد إعادة ضبط جميع الأعداد؟')) {
+                state.count = 0;
+                state.currentRound = 0;
+                state.totalCompleted = 0;
+                state.history = [];
+                updateDisplay();
+            }
+        }
+
+        // Mode Selection
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                state.mode = btn.dataset.mode;
+                state.target = parseInt(btn.dataset.target);
+                state.roundSize = parseInt(btn.dataset.round);
+                state.dhikr = btn.dataset.dhikr;
+                state.meaning = btn.dataset.meaning;
+                state.count = 0;
+                state.currentRound = 0;
+                state.history = [];
+                
+                updateDhikrDisplay();
+                updateDisplay();
+            });
+        });
+
+        // Main Bead Events
+        mainBead.addEventListener('click', increment);
+        mainBead.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            increment(e);
+        });
+
+        // Control Buttons
+        document.getElementById('btn-undo').addEventListener('click', undo);
+        document.getElementById('btn-reset').addEventListener('click', reset);
+
+        // Settings Modal
+        const modal = document.getElementById('settings-modal');
+        document.getElementById('btn-settings').addEventListener('click', () => {
+            modal.classList.add('active');
+        });
+        document.getElementById('btn-close-settings').addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        // Toggle Switches
+        document.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+                const id = toggle.id;
+                const setting = id.replace('toggle-', '');
+                state.settings[setting] = toggle.classList.contains('active');
+                
+                if (setting === 'meaning') {
+                    updateDhikrDisplay();
+                }
+            });
+        });
+
+        // Session Timer
+        function updateSessionTime() {
+            const elapsed = Math.floor((Date.now() - state.sessionStart) / 1000);
+            const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            sessionTime.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateSessionTime, 1000);
+
+        // Keyboard Support
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                increment();
+            } else if (e.code === 'KeyZ' && e.ctrlKey) {
+                undo();
+            }
+        });
+
+        // Prevent sleep
+        if (state.settings.lock && 'wakeLock' in navigator) {
+            navigator.wakeLock.request('screen').catch(() => {});
+        }
+
+        // Initialize
+        updateDhikrDisplay();
+        updateDisplay();
+    </script>
+</body>
+</html>

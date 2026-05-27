@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>المسبحة الإلكترونية الذكية</title>
+    <title>المسبحة الإلكترونية الذكية - Offline</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;700&family=Amiri:wght@400;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -14,59 +16,130 @@
             -webkit-user-select: none;
         }
 
+        :root {
+            --crystal-primary: #e8a838;
+            --crystal-light: #ffd700;
+            --crystal-dark: #b8860b;
+            --crystal-glow: rgba(232, 168, 56, 0.4);
+            --bg-dark: #0a0a0a;
+            --bg-card: #111;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888;
+            --accent: #00ff88;
+        }
+
         body {
-            background: #0a0a0a;
+            background: var(--bg-dark);
             width: 100vw;
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-family: 'Segoe UI', 'Noto Sans Arabic', 'Droid Arabic Kufi', system-ui, -apple-system, sans-serif;
+            font-family: 'Noto Sans Arabic', 'Segoe UI', sans-serif;
             overflow: hidden;
-            color: #e0e0e0;
+            color: var(--text-primary);
+            position: relative;
         }
 
-        /* OLED Display Panel */
+        /* Athan Notification Bar */
+        #athan-bar {
+            position: fixed;
+            top: -80px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1a472a, #0d3320);
+            border-bottom: 2px solid var(--accent);
+            padding: 15px 20px;
+            z-index: 1000;
+            transition: top 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: row-reverse;
+            box-shadow: 0 5px 30px rgba(0, 255, 136, 0.2);
+        }
+
+        #athan-bar.show {
+            top: 0;
+        }
+
+        .athan-icon {
+            font-size: 28px;
+            animation: athanPulse 2s infinite;
+        }
+
+        @keyframes athanPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .athan-text {
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .athan-text .prayer-name {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .athan-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Display Panel */
         #display-panel {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
+            width: 92%;
+            max-width: 380px;
+            padding: 18px;
             margin-top: 15px;
-            background: #000;
-            border: 1px solid #333;
+            background: var(--bg-card);
+            border: 1px solid #222;
             border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 25px rgba(232, 168, 56, 0.08);
+            transition: margin-top 0.5s;
+        }
+
+        #display-panel.athan-pushed {
+            margin-top: 75px;
         }
 
         .display-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 6px 0;
+            margin: 5px 0;
             flex-direction: row-reverse;
         }
 
         .display-label {
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #666;
+            letter-spacing: 0.5px;
+            color: #555;
         }
 
         .display-value {
-            font-family: 'Courier New', 'Noto Sans Arabic', monospace;
-            font-size: 16px;
-            color: #00ff88;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            color: var(--crystal-primary);
+            text-shadow: 0 0 8px rgba(232, 168, 56, 0.4);
         }
 
         #main-counter {
-            font-size: 56px;
+            font-size: 52px;
             font-weight: 200;
-            color: #00ff88;
+            color: var(--crystal-primary);
             text-align: center;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
-            margin: 8px 0;
+            text-shadow: 0 0 15px rgba(232, 168, 56, 0.5);
+            margin: 6px 0;
             font-variant-numeric: tabular-nums;
             font-family: 'Courier New', monospace;
         }
@@ -76,36 +149,36 @@
             height: 3px;
             background: #1a1a1a;
             border-radius: 2px;
-            margin-top: 8px;
+            margin-top: 6px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: #00ff88;
+            background: linear-gradient(90deg, var(--crystal-dark), var(--crystal-primary), var(--crystal-light));
             border-radius: 2px;
             transition: width 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 8px var(--crystal-glow);
         }
 
-        /* Dhikr Display Area - SEPARATE from button */
+        /* Dhikr Display */
         #dhikr-display {
-            margin: 15px 0 10px 0;
+            margin: 12px 0 8px;
             text-align: center;
-            min-height: 50px;
+            min-height: 55px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         #dhikr-word {
-            font-size: 28px;
+            font-size: 26px;
             color: #fff;
             font-weight: 500;
             letter-spacing: 1px;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
             transition: all 0.3s ease;
-            font-family: 'Noto Sans Arabic', 'Droid Arabic Kufi', 'Segoe UI', sans-serif;
+            font-family: 'Amiri', 'Noto Sans Arabic', serif;
         }
 
         #dhikr-word.pulse {
@@ -114,23 +187,65 @@
 
         @keyframes textPulse {
             0% { transform: scale(1); color: #fff; }
-            50% { transform: scale(1.1); color: #00ff88; }
+            50% { transform: scale(1.08); color: var(--crystal-primary); }
             100% { transform: scale(1); color: #fff; }
         }
 
         #dhikr-meaning {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-            letter-spacing: 0.5px;
+            font-size: 11px;
+            color: #555;
+            margin-top: 3px;
+        }
+
+        /* Offline Badge */
+        #offline-badge {
+            position: absolute;
+            top: 35px;
+            right: 15px;
+            font-size: 9px;
+            color: var(--crystal-primary);
+            background: rgba(232, 168, 56, 0.1);
+            border: 1px solid rgba(232, 168, 56, 0.2);
+            border-radius: 10px;
+            padding: 2px 8px;
+            letter-spacing: 1px;
+        }
+
+        /* Stats Bar */
+        #stats-bar {
+            display: flex;
+            gap: 10px;
+            margin: 8px 0;
+            padding: 0 15px;
+            width: 100%;
+            max-width: 380px;
+            justify-content: center;
+        }
+
+        .stat-chip {
+            background: var(--bg-card);
+            border: 1px solid #222;
+            border-radius: 15px;
+            padding: 6px 14px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-chip .stat-num {
+            color: var(--crystal-primary);
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
         }
 
         /* Mode Selector */
         #mode-selector {
             display: flex;
-            gap: 8px;
-            margin: 10px 0;
-            padding: 0 20px;
+            gap: 6px;
+            margin: 8px 0;
+            padding: 0 15px;
             overflow-x: auto;
             max-width: 100%;
             scrollbar-width: none;
@@ -142,28 +257,27 @@
         }
 
         .mode-btn {
-            padding: 8px 16px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 20px;
-            color: #888;
-            font-size: 13px;
+            padding: 7px 14px;
+            background: var(--bg-card);
+            border: 1px solid #222;
+            border-radius: 18px;
+            color: #666;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s;
             white-space: nowrap;
-            letter-spacing: 0.5px;
-            font-family: 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+            font-family: 'Noto Sans Arabic', sans-serif;
         }
 
         .mode-btn.active {
-            background: #00ff88;
+            background: linear-gradient(135deg, var(--crystal-dark), var(--crystal-primary));
             color: #000;
-            border-color: #00ff88;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-            font-weight: bold;
+            border-color: var(--crystal-primary);
+            box-shadow: 0 0 15px var(--crystal-glow);
+            font-weight: 700;
         }
 
-        /* Main Bead - SMALLER and more elegant */
+        /* Crystal Bead Button */
         #bead-container {
             flex: 1;
             display: flex;
@@ -172,277 +286,136 @@
             justify-content: center;
             width: 100%;
             position: relative;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
         }
 
         #main-bead {
-            width: 120px;
-            height: 120px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #2a2a2a, #0a0a0a);
-            border: 2px solid #333;
             position: relative;
             cursor: pointer;
-            transition: all 0.1s;
-            box-shadow: 
-                0 8px 30px rgba(0,0,0,0.8),
-                inset 0 2px 8px rgba(255,255,255,0.05);
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 10px;
-        }
+            margin-top: 8px;
 
-        #main-bead:active {
-            transform: scale(0.92);
-            background: radial-gradient(circle at 35% 35%, #1a1a1a, #050505);
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255, 220, 120, 0.9), transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(184, 134, 11, 0.8), transparent 50%),
+                radial-gradient(circle at 50% 50%, #d4a017, #b8860b 60%, #8b6914 100%);
+            
             box-shadow: 
-                0 4px 15px rgba(0,0,0,0.9),
-                inset 0 2px 8px rgba(0,0,0,0.5);
+                0 8px 25px rgba(184, 134, 11, 0.3),
+                0 0 40px rgba(232, 168, 56, 0.15),
+                inset 0 -3px 10px rgba(0,0,0,0.3),
+                inset 0 3px 10px rgba(255, 220, 120, 0.3);
+            
+            border: 1px solid rgba(255, 220, 120, 0.3);
         }
 
         #main-bead::before {
             content: '';
             position: absolute;
-            width: 90px;
-            height: 90px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
-            border: 1px solid #222;
+            background: 
+                radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.4), transparent 60%),
+                radial-gradient(circle at 65% 65%, rgba(184, 134, 11, 0.3), transparent 50%);
             pointer-events: none;
         }
 
         #main-bead::after {
             content: '';
             position: absolute;
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            border: 1px solid #1a1a1a;
+            background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.2), transparent 70%);
             pointer-events: none;
+        }
+
+        #main-bead:active {
+            transform: scale(0.92) translateY(2px);
+            box-shadow: 
+                0 4px 15px rgba(184, 134, 11, 0.2),
+                0 0 30px rgba(232, 168, 56, 0.1),
+                inset 0 -2px 8px rgba(0,0,0,0.4),
+                inset 0 2px 8px rgba(255, 220, 120, 0.2);
         }
 
         .bead-icon {
-            font-size: 32px;
-            opacity: 0.4;
+            font-size: 28px;
+            opacity: 0.5;
             pointer-events: none;
-            color: #00ff88;
+            color: rgba(255, 255, 255, 0.6);
+            text-shadow: 0 0 10px rgba(255, 220, 120, 0.5);
         }
 
-        /* Tap hint */
         #tap-hint {
-            font-size: 11px;
+            font-size: 10px;
             color: #444;
-            margin-top: 12px;
+            margin-top: 10px;
             letter-spacing: 1px;
         }
 
-        /* Ripple Effect - scaled for smaller button */
+        /* Ripple Effect */
         .ripple {
             position: absolute;
             border-radius: 50%;
-            border: 2px solid #00ff88;
-            animation: rippleOut 0.6s ease-out forwards;
+            border: 2px solid var(--crystal-primary);
+            animation: rippleOut 0.7s ease-out forwards;
             pointer-events: none;
         }
 
         @keyframes rippleOut {
-            from {
-                width: 120px;
-                height: 120px;
-                opacity: 0.5;
-            }
-            to {
-                width: 250px;
-                height: 250px;
-                opacity: 0;
-            }
+            from { width: 110px; height: 110px; opacity: 0.6; }
+            to { width: 240px; height: 240px; opacity: 0; }
         }
 
-        /* Control Buttons */
-        #controls {
-            display: flex;
-            gap: 15px;
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            flex-direction: row-reverse;
-        }
-
-        .ctrl-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #888;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ctrl-btn:active {
-            background: #2a2a2a;
-            transform: scale(0.95);
-        }
-
-        .ctrl-btn.danger {
-            border-color: #ff4444;
-            color: #ff4444;
-        }
-
-        .ctrl-btn.danger:active {
-            background: rgba(255, 68, 68, 0.1);
-        }
-
-        /* Vibration Indicator */
-        #vibro-indicator {
+        /* Crystal Sparkle */
+        .sparkle {
             position: absolute;
-            top: 10px;
-            left: 20px;
-            font-size: 10px;
-            color: #00ff88;
-            opacity: 0;
-            transition: opacity 0.2s;
-            letter-spacing: 2px;
-        }
-
-        #vibro-indicator.active {
-            opacity: 1;
-        }
-
-        /* Session Timer */
-        #session-time {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 11px;
-            color: #444;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 1px;
-        }
-
-        /* Particle Effect */
-        .particle {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background: #00ff88;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particleFloat 1s ease-out forwards;
-        }
-
-        @keyframes particleFloat {
-            to {
-                transform: translateY(-80px) scale(0);
-                opacity: 0;
-            }
-        }
-
-        /* Settings Modal */
-        #settings-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-
-        #settings-modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 25px;
-            width: 90%;
-            max-width: 350px;
-        }
-
-        .modal-title {
-            color: #00ff88;
-            font-size: 18px;
-            margin-bottom: 20px;
-            text-align: center;
-            letter-spacing: 1px;
-            font-weight: bold;
-        }
-
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 12px 0;
-            padding: 8px 0;
-            border-bottom: 1px solid #1a1a1a;
-            flex-direction: row-reverse;
-        }
-
-        .setting-label {
-            color: #888;
-            font-size: 14px;
-        }
-
-        /* Toggle Switch */
-        .toggle {
-            width: 46px;
-            height: 24px;
-            background: #333;
-            border-radius: 12px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .toggle.active {
-            background: #00ff88;
-        }
-
-        .toggle::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 4px;
+            height: 4px;
             background: #fff;
             border-radius: 50%;
-            top: 2px;
-            right: 2px;
-            transition: transform 0.3s;
+            pointer-events: none;
+            animation: sparkleAnim 1s ease-out forwards;
+            box-shadow: 0 0 6px #fff, 0 0 12px var(--crystal-primary);
         }
 
-        .toggle.active::after {
-            transform: translateX(-22px);
+        @keyframes sparkleAnim {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0) translate(var(--tx), var(--ty)); opacity: 0; }
         }
 
-        .close-modal {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background: #00ff88;
-            color: #000;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            letter-spacing: 1px;
-            font-family: 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+        /* Round Complete */
+        #round-complete {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 13px;
+            color: var(--crystal-primary);
+            opacity: 0;
+            pointer-events: none;
+            letter-spacing: 2px;
+            transition: all 0.5s;
+            text-shadow: 0 0 10px var(--crystal-glow);
         }
 
-        /* Sound Wave Animation */
+        #round-complete.show {
+            opacity: 1;
+            transform: translate(-50%, -70%);
+        }
+
+        /* Sound Wave */
         .sound-wave {
             position: absolute;
-            bottom: 80px;
+            bottom: 70px;
             display: flex;
             gap: 3px;
             opacity: 0;
@@ -456,55 +429,365 @@
 
         .wave-bar {
             width: 3px;
-            background: #00ff88;
+            background: linear-gradient(to top, var(--crystal-dark), var(--crystal-primary));
             border-radius: 2px;
             animation: wave 0.5s ease-in-out infinite alternate;
         }
 
         @keyframes wave {
-            from { height: 5px; }
-            to { height: 20px; }
+            from { height: 4px; }
+            to { height: 18px; }
+        }
+
+        /* Controls */
+        #controls {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            margin-bottom: 12px;
+            flex-direction: row-reverse;
+        }
+
+        .ctrl-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid #222;
+            color: #666;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ctrl-btn:active {
+            background: #1a1a1a;
+            transform: scale(0.95);
+        }
+
+        .ctrl-btn.danger {
+            border-color: #c0392b;
+            color: #c0392b;
+        }
+
+        .ctrl-btn.danger:active {
+            background: rgba(192, 57, 43, 0.1);
+        }
+
+        /* Vibration Indicator */
+        #vibro-indicator {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 9px;
+            color: var(--crystal-primary);
+            opacity: 0;
+            transition: opacity 0.2s;
+            letter-spacing: 1px;
+        }
+
+        #vibro-indicator.active {
+            opacity: 1;
+        }
+
+        /* Session Timer */
+        #session-time {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 10px;
+            color: #444;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Settings Modal */
+        #settings-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(15px);
+        }
+
+        #settings-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid #222;
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 340px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            color: var(--crystal-primary);
+            font-size: 18px;
+            margin-bottom: 18px;
+            text-align: center;
+            font-weight: 700;
+            text-shadow: 0 0 10px var(--crystal-glow);
+        }
+
+        .setting-section {
+            margin: 15px 0;
+            padding-top: 15px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .setting-section-title {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 6px 0;
+            flex-direction: row-reverse;
+        }
+
+        .setting-label {
+            color: #777;
+            font-size: 13px;
+        }
+
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: #333;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: var(--crystal-primary);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            right: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .toggle.active::after {
+            transform: translateX(-20px);
+        }
+
+        .close-modal {
+            width: 100%;
+            padding: 12px;
+            margin-top: 18px;
+            background: linear-gradient(135deg, var(--crystal-dark), var(--crystal-primary));
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans Arabic', sans-serif;
+        }
+
+        /* City Selector */
+        .city-selector {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Noto Sans Arabic', sans-serif;
+            font-size: 14px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .city-selector option {
+            background: #111;
+            color: var(--text-primary);
+        }
+
+        /* Achievements */
+        #achievements-btn {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: none;
+            border: none;
+            color: var(--crystal-primary);
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        #achievements-btn:hover {
+            opacity: 1;
+        }
+
+        #achievements-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(15px);
+        }
+
+        #achievements-modal.active {
+            display: flex;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .achievement-item {
+            aspect-ratio: 1;
+            background: var(--bg-card);
+            border: 1px solid #222;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .achievement-item.unlocked {
+            border-color: var(--crystal-primary);
+            box-shadow: 0 0 10px var(--crystal-glow);
+        }
+
+        .achievement-item .ach-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            opacity: 0.3;
+        }
+
+        .achievement-item.unlocked .ach-icon {
+            opacity: 1;
+        }
+
+        .achievement-item .ach-name {
+            font-size: 9px;
+            color: #555;
+        }
+
+        .achievement-item.unlocked .ach-name {
+            color: var(--crystal-primary);
+        }
+
+        /* Weekly Chart */
+        .weekly-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            height: 60px;
+            margin: 10px 0;
+            padding: 0 10px;
+        }
+
+        .chart-bar {
+            width: 22px;
+            background: linear-gradient(to top, var(--crystal-dark), var(--crystal-primary));
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height 0.5s ease;
+            opacity: 0.7;
+        }
+
+        .chart-bar.today {
+            opacity: 1;
+            box-shadow: 0 0 8px var(--crystal-glow);
+        }
+
+        .chart-label {
+            font-size: 9px;
+            color: #555;
+            text-align: center;
+            margin-top: 4px;
         }
 
         /* Completion Animation */
         @keyframes completionPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
+            0%, 100% { box-shadow: 0 0 20px var(--crystal-glow); }
+            50% { box-shadow: 0 0 50px rgba(232, 168, 56, 0.6), 0 0 80px rgba(232, 168, 56, 0.3); }
         }
 
         .completion {
-            animation: completionPulse 1s ease-in-out 3;
+            animation: completionPulse 1.2s ease-in-out 3;
         }
 
-        /* Round completion subtle notification */
-        #round-complete {
-            position: absolute;
-            top: 45%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 14px;
-            color: #ffd700;
-            opacity: 0;
-            pointer-events: none;
-            letter-spacing: 2px;
-            transition: all 0.5s;
+        ::-webkit-scrollbar {
+            width: 4px;
         }
 
-        #round-complete.show {
-            opacity: 1;
-            transform: translate(-50%, -80%);
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Session Timer -->
-    <div id="session-time">00:00:00</div>
+    <!-- Offline Badge -->
+    <div id="offline-badge">⬤ OFFLINE</div>
 
-    <!-- Vibration Indicator -->
+    <!-- Athan Bar -->
+    <div id="athan-bar">
+        <button class="athan-close" onclick="closeAthan()">✕</button>
+        <div class="athan-text">
+            <span>حان الآن وقت صلاة</span>
+            <span class="prayer-name" id="athan-prayer">الفجر</span>
+        </div>
+        <div class="athan-icon">🕌</div>
+    </div>
+
+    <!-- Top Bar -->
+    <div id="session-time">00:00:00</div>
+    <button id="achievements-btn" onclick="showAchievements()" title="الإنجازات">🏆</button>
     <div id="vibro-indicator">◉ اهتزاز</div>
 
-    <!-- OLED Display Panel -->
+    <!-- Display Panel -->
     <div id="display-panel">
         <div class="display-row">
             <span class="display-label">العدد الحالي</span>
@@ -524,7 +807,23 @@
         </div>
     </div>
 
-    <!-- Dhikr Display - SEPARATE from button -->
+    <!-- Stats Bar -->
+    <div id="stats-bar">
+        <div class="stat-chip">
+            <span>اليوم:</span>
+            <span class="stat-num" id="today-count">٠</span>
+        </div>
+        <div class="stat-chip">
+            <span>الأسبوع:</span>
+            <span class="stat-num" id="week-count">٠</span>
+        </div>
+        <div class="stat-chip">
+            <span>الإنجازات:</span>
+            <span class="stat-num" id="achievements-count">٠/١٢</span>
+        </div>
+    </div>
+
+    <!-- Dhikr Display -->
     <div id="dhikr-display">
         <div>
             <div id="dhikr-word">سبحان الله</div>
@@ -532,7 +831,7 @@
         </div>
     </div>
 
-    <!-- Round Complete Notification -->
+    <!-- Round Complete -->
     <div id="round-complete">✦ ختمة مكتملة ✦</div>
 
     <!-- Mode Selector -->
@@ -546,12 +845,12 @@
         <button class="mode-btn" data-mode="custom" data-target="1000" data-round="100" data-dhikr="الذكر المختار" data-meaning="adhkar">مخصص</button>
     </div>
 
-    <!-- Main Bead - SMALLER -->
+    <!-- Crystal Bead -->
     <div id="bead-container">
         <div id="main-bead">
-            <span class="bead-icon">۞</span>
+            <span class="bead-icon">💎</span>
         </div>
-        <div id="tap-hint">انقر للعد</div>
+        <div id="tap-hint">انقر على الكريستال للعد</div>
         <div class="sound-wave" id="sound-wave">
             <div class="wave-bar" style="animation-delay: 0s"></div>
             <div class="wave-bar" style="animation-delay: 0.1s"></div>
@@ -571,44 +870,118 @@
     <!-- Settings Modal -->
     <div id="settings-modal">
         <div class="modal-content">
-            <div class="modal-title">إعدادات الجهاز</div>
+            <div class="modal-title">⚙️ إعدادات المسبحة</div>
             
+            <div class="setting-section-title">🕌 مواقيت الصلاة (Offline)</div>
             <div class="setting-row">
-                <span class="setting-label">الاهتزاز</span>
-                <div class="toggle active" id="toggle-vibro"></div>
-            </div>
-            
-            <div class="setting-row">
-                <span class="setting-label">الصوت</span>
-                <div class="toggle active" id="toggle-sound"></div>
-            </div>
-            
-            <div class="setting-row">
-                <span class="setting-label">الإضاءة</span>
-                <div class="toggle" id="toggle-led"></div>
-            </div>
-            
-            <div class="setting-row">
-                <span class="setting-label">إبقاء الشاشة مضيئة</span>
-                <div class="toggle active" id="toggle-lock"></div>
-            </div>
-            
-            <div class="setting-row">
-                <span class="setting-label">تأثير الجسيمات</span>
-                <div class="toggle active" id="toggle-particles"></div>
+                <span class="setting-label">المدينة</span>
+                <select class="city-selector" id="city-selector" onchange="changeCity(this.value)">
+                    <option value="cairo">القاهرة</option>
+                    <option value="alex">الإسكندرية</option>
+                    <option value="giza">الجيزة</option>
+                    <option value="mansoura">المنصورة</option>
+                    <option value="tanta">طنطا</option>
+                    <option value="zagazig">الزقازيق</option>
+                    <option value="ismailia">الإسماعيلية</option>
+                    <option value="suez">السويس</option>
+                    <option value="portsaid">بورسعيد</option>
+                    <option value="aswan">أسوان</option>
+                    <option value="luxor">الأقصر</option>
+                    <option value="asuit">أسيوط</option>
+                    <option value="minya">المنيا</option>
+                    <option value="qena">قنا</option>
+                    <option value="sohag">سوهاج</option>
+                </select>
             </div>
 
-            <div class="setting-row">
-                <span class="setting-label">عرض المعنى</span>
-                <div class="toggle active" id="toggle-meaning"></div>
+            <div class="setting-section">
+                <div class="setting-section-title">🔊 الصوت والإحساس</div>
+                <div class="setting-row">
+                    <span class="setting-label">صوت الكريستال</span>
+                    <div class="toggle active" id="toggle-sound"></div>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">الاهتزاز</span>
+                    <div class="toggle active" id="toggle-vibro"></div>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">وميض الإضاءة</span>
+                    <div class="toggle" id="toggle-led"></div>
+                </div>
             </div>
 
-            <button class="close-modal" id="btn-close-settings">تم</button>
+            <div class="setting-section">
+                <div class="setting-section-title">📊 العرض</div>
+                <div class="setting-row">
+                    <span class="setting-label">عرض المعنى</span>
+                    <div class="toggle active" id="toggle-meaning"></div>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">تأثير البريق</span>
+                    <div class="toggle active" id="toggle-particles"></div>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <div class="setting-section-title">🕌 الأذان</div>
+                <div class="setting-row">
+                    <span class="setting-label">تنبيه الأذان</span>
+                    <div class="toggle active" id="toggle-athan"></div>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">إبقاء الشاشة مضيئة</span>
+                    <div class="toggle active" id="toggle-lock"></div>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <div class="setting-section-title">📈 الإحصائيات الأسبوعية</div>
+                <div class="weekly-chart" id="weekly-chart"></div>
+            </div>
+
+            <button class="close-modal" onclick="closeSettings()">تم</button>
+        </div>
+    </div>
+
+    <!-- Achievements Modal -->
+    <div id="achievements-modal">
+        <div class="modal-content">
+            <div class="modal-title">🏆 الإنجازات</div>
+            <div class="achievements-grid" id="achievements-grid"></div>
+            <button class="close-modal" onclick="closeAchievements()">تم</button>
         </div>
     </div>
 
     <script>
-        // Arabic Numerals Conversion
+        // ====== OFFLINE PRAYER TIMES DATABASE ======
+        const prayerTimesDB = {
+            cairo: { Fajr: '04:30', Sunrise: '06:00', Dhuhr: '12:00', Asr: '15:30', Maghrib: '18:30', Isha: '20:00' },
+            alex: { Fajr: '04:35', Sunrise: '06:05', Dhuhr: '12:05', Asr: '15:35', Maghrib: '18:35', Isha: '20:05' },
+            giza: { Fajr: '04:32', Sunrise: '06:02', Dhuhr: '12:02', Asr: '15:32', Maghrib: '18:32', Isha: '20:02' },
+            mansoura: { Fajr: '04:28', Sunrise: '05:58', Dhuhr: '11:58', Asr: '15:28', Maghrib: '18:28', Isha: '19:58' },
+            tanta: { Fajr: '04:29', Sunrise: '05:59', Dhuhr: '11:59', Asr: '15:29', Maghrib: '18:29', Isha: '19:59' },
+            zagazig: { Fajr: '04:27', Sunrise: '05:57', Dhuhr: '11:57', Asr: '15:27', Maghrib: '18:27', Isha: '19:57' },
+            ismailia: { Fajr: '04:25', Sunrise: '05:55', Dhuhr: '11:55', Asr: '15:25', Maghrib: '18:25', Isha: '19:55' },
+            suez: { Fajr: '04:24', Sunrise: '05:54', Dhuhr: '11:54', Asr: '15:24', Maghrib: '18:24', Isha: '19:54' },
+            portsaid: { Fajr: '04:22', Sunrise: '05:52', Dhuhr: '11:52', Asr: '15:22', Maghrib: '18:22', Isha: '19:52' },
+            aswan: { Fajr: '04:15', Sunrise: '05:45', Dhuhr: '11:45', Asr: '15:15', Maghrib: '18:15', Isha: '19:45' },
+            luxor: { Fajr: '04:17', Sunrise: '05:47', Dhuhr: '11:47', Asr: '15:17', Maghrib: '18:17', Isha: '19:47' },
+            asuit: { Fajr: '04:20', Sunrise: '05:50', Dhuhr: '11:50', Asr: '15:20', Maghrib: '18:20', Isha: '19:50' },
+            minya: { Fajr: '04:22', Sunrise: '05:52', Dhuhr: '11:52', Asr: '15:22', Maghrib: '18:22', Isha: '19:52' },
+            qena: { Fajr: '04:16', Sunrise: '05:46', Dhuhr: '11:46', Asr: '15:16', Maghrib: '18:16', Isha: '19:46' },
+            sohag: { Fajr: '04:19', Sunrise: '05:49', Dhuhr: '11:49', Asr: '15:19', Maghrib: '18:19', Isha: '19:49' }
+        };
+
+        const prayerNames = {
+            Fajr: 'الفجر',
+            Sunrise: 'الشروق',
+            Dhuhr: 'الظهر',
+            Asr: 'العصر',
+            Maghrib: 'المغرب',
+            Isha: 'العشاء'
+        };
+
+        // Arabic Numerals
         const toArabicNums = (num) => {
             const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
             return num.toString().split('').map(d => arabicDigits[parseInt(d)] || d).join('');
@@ -625,16 +998,60 @@
             dhikr: 'سبحان الله',
             meaning: 'سبحان الله وبحمده',
             settings: {
-                haptic: true,
                 sound: true,
+                haptic: true,
                 led: false,
-                lock: true,
+                meaning: true,
                 particles: true,
-                meaning: true
+                athan: true,
+                lock: true
             },
             history: [],
-            sessionStart: Date.now()
+            sessionStart: Date.now(),
+            todayCount: 0,
+            weekData: [0, 0, 0, 0, 0, 0, 0],
+            achievements: [
+                { id: 'first', name: 'البداية', icon: '🌟', condition: (s) => s.count >= 1 },
+                { id: 'ten', name: 'عشرة', icon: '🔟', condition: (s) => s.count >= 10 },
+                { id: 'hundred', name: 'مئة', icon: '💯', condition: (s) => s.count >= 100 },
+                { id: 'khatma', name: 'ختمة', icon: '📿', condition: (s) => s.totalCompleted >= 1 },
+                { id: 'five_khatmas', name: 'خمس ختمات', icon: '🕌', condition: (s) => s.totalCompleted >= 5 },
+                { id: 'master', name: 'حافظ', icon: '👑', condition: (s) => s.totalCompleted >= 10 },
+                { id: 'speed', name: 'سريع', icon: '⚡', condition: (s) => s.count >= 33 && (Date.now() - s.sessionStart) < 60000 },
+                { id: 'night', name: 'ساهر', icon: '🌙', condition: () => new Date().getHours() >= 23 || new Date().getHours() <= 4 },
+                { id: 'morning', name: 'باكر', icon: '🌅', condition: () => new Date().getHours() >= 5 && new Date().getHours() <= 7 },
+                { id: 'all_modes', name: 'متنوع', icon: '🎨', condition: (s) => s.usedModes && s.usedModes.size >= 4 },
+                { id: 'thousand', name: 'ألف', icon: '✨', condition: (s) => s.todayCount >= 1000 },
+                { id: 'consistent', name: 'ملتزم', icon: '🔥', condition: (s) => s.weekData.filter(d => d > 0).length >= 7 }
+            ],
+            unlockedAchievements: new Set(),
+            usedModes: new Set(['tasbih']),
+            currentCity: 'cairo'
         };
+
+        // Load/Save localStorage
+        function loadData() {
+            const saved = localStorage.getItem('tasbihData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                state.todayCount = data.todayCount || 0;
+                state.weekData = data.weekData || [0, 0, 0, 0, 0, 0, 0];
+                state.unlockedAchievements = new Set(data.unlockedAchievements || []);
+                state.usedModes = new Set(data.usedModes || ['tasbih']);
+                state.currentCity = data.currentCity || 'cairo';
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('tasbihData', JSON.stringify({
+                todayCount: state.todayCount,
+                weekData: state.weekData,
+                unlockedAchievements: [...state.unlockedAchievements],
+                usedModes: [...state.usedModes],
+                currentCity: state.currentCity,
+                lastDate: new Date().toDateString()
+            }));
+        }
 
         // DOM Elements
         const mainCounter = document.getElementById('main-counter');
@@ -649,8 +1066,14 @@
         const dhikrWord = document.getElementById('dhikr-word');
         const dhikrMeaning = document.getElementById('dhikr-meaning');
         const roundComplete = document.getElementById('round-complete');
+        const todayCountEl = document.getElementById('today-count');
+        const weekCountEl = document.getElementById('week-count');
+        const achievementsCountEl = document.getElementById('achievements-count');
+        const athanBar = document.getElementById('athan-bar');
+        const displayPanel = document.getElementById('display-panel');
+        const citySelector = document.getElementById('city-selector');
 
-        // Audio Context for click sound
+        // Audio
         let audioCtx = null;
 
         function initAudio() {
@@ -659,76 +1082,116 @@
             }
         }
 
-        function playClickSound() {
+        // Crystal Sound
+        function playCrystalSound() {
             if (!state.settings.sound || !audioCtx) return;
-            
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.1);
+            const now = audioCtx.currentTime;
+
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.frequency.setValueAtTime(1200, now);
+            osc1.frequency.exponentialRampToValueAtTime(2400, now + 0.05);
+            osc1.type = 'sine';
+            gain1.gain.setValueAtTime(0.15, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.frequency.setValueAtTime(1800, now);
+            osc2.frequency.exponentialRampToValueAtTime(3600, now + 0.03);
+            osc2.type = 'triangle';
+            gain2.gain.setValueAtTime(0.08, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc2.start(now);
+            osc2.stop(now + 0.2);
+
+            const osc3 = audioCtx.createOscillator();
+            const gain3 = audioCtx.createGain();
+            osc3.connect(gain3);
+            gain3.connect(audioCtx.destination);
+            osc3.frequency.setValueAtTime(3000, now);
+            osc3.type = 'sine';
+            gain3.gain.setValueAtTime(0.03, now);
+            gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc3.start(now);
+            osc3.stop(now + 0.15);
         }
 
-        // Haptic Feedback
+        // Completion Chime
+        function playCompletionChime() {
+            if (!state.settings.sound || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const notes = [523, 659, 784, 1047];
+
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.12, now + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.4);
+                osc.start(now + i * 0.15);
+                osc.stop(now + i * 0.15 + 0.4);
+            });
+        }
+
+        // Haptic
         function triggerHaptic() {
             if (!state.settings.haptic) return;
-            
-            if (navigator.vibrate) {
-                navigator.vibrate(15);
-            }
-            
+            if (navigator.vibrate) navigator.vibrate(12);
             vibroIndicator.classList.add('active');
-            setTimeout(() => vibroIndicator.classList.remove('active'), 200);
+            setTimeout(() => vibroIndicator.classList.remove('active'), 150);
         }
 
         // LED Flash
         function triggerLED() {
             if (!state.settings.led) return;
-            
             const flash = document.createElement('div');
-            flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#00ff88;opacity:0.3;pointer-events:none;z-index:999;transition:opacity 0.1s;';
+            flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#e8a838;opacity:0.15;pointer-events:none;z-index:999;transition:opacity 0.1s;';
             document.body.appendChild(flash);
-            
             requestAnimationFrame(() => {
                 flash.style.opacity = '0';
                 setTimeout(() => flash.remove(), 100);
             });
         }
 
-        // Particle Effect
-        function spawnParticles(x, y) {
+        // Sparkles
+        function spawnSparkles(x, y) {
             if (!state.settings.particles) return;
-            
-            for (let i = 0; i < 5; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = x + (Math.random() - 0.5) * 30 + 'px';
-                particle.style.top = y + (Math.random() - 0.5) * 30 + 'px';
-                particle.style.animationDelay = Math.random() * 0.2 + 's';
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 1000);
+            for (let i = 0; i < 8; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                const angle = (Math.PI * 2 * i) / 8 + Math.random() * 0.5;
+                const distance = 30 + Math.random() * 50;
+                sparkle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                sparkle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                sparkle.style.left = x + 'px';
+                sparkle.style.top = y + 'px';
+                sparkle.style.animationDelay = `${Math.random() * 0.1}s`;
+                document.body.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 1000);
             }
         }
 
-        // Ripple Effect
-        function createRipple(x, y) {
+        // Ripple
+        function createRipple() {
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
-            ripple.style.left = x - 60 + 'px';
-            ripple.style.top = y - 60 + 'px';
+            ripple.style.left = '-65px';
+            ripple.style.top = '-65px';
             mainBead.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
+            setTimeout(() => ripple.remove(), 700);
         }
 
-        // Update Dhikr Display
+        // Update Dhikr
         function updateDhikrDisplay() {
             dhikrWord.textContent = state.dhikr;
             if (state.settings.meaning) {
@@ -739,99 +1202,103 @@
             }
         }
 
-        // Pulse Dhikr Text
         function pulseDhikr() {
             dhikrWord.classList.remove('pulse');
-            void dhikrWord.offsetWidth; // Trigger reflow
+            void dhikrWord.offsetWidth;
             dhikrWord.classList.add('pulse');
         }
 
-        // Show Round Complete
-        function showRoundComplete() {
-            roundComplete.classList.add('show');
-            setTimeout(() => roundComplete.classList.remove('show'), 2000);
+        // Stats
+        function updateStats() {
+            state.todayCount++;
+            const today = new Date().getDay();
+            state.weekData[today] = (state.weekData[today] || 0) + 1;
+            todayCountEl.textContent = toArabicNums(state.todayCount);
+            weekCountEl.textContent = toArabicNums(state.weekData.reduce((a, b) => a + b, 0));
+            checkAchievements();
+            saveData();
         }
 
-        // Update Display
+        function checkAchievements() {
+            let newUnlocks = 0;
+            state.achievements.forEach(ach => {
+                if (!state.unlockedAchievements.has(ach.id) && ach.condition(state)) {
+                    state.unlockedAchievements.add(ach.id);
+                    newUnlocks++;
+                }
+            });
+            if (newUnlocks > 0) {
+                achievementsCountEl.textContent = `${toArabicNums(state.unlockedAchievements.size)}/${toArabicNums(state.achievements.length)}`;
+                saveData();
+            }
+        }
+
+        // Display
         function updateDisplay() {
             mainCounter.textContent = toArabicNums(state.count);
             roundDisplay.textContent = `${toArabicNums(state.currentRound)} / ${toArabicNums(state.roundSize)}`;
             totalDisplay.textContent = toArabicNums(state.totalCompleted);
             targetDisplay.textContent = toArabicNums(state.target);
-            
+
             const progress = (state.count / state.target) * 100;
             progressBar.style.width = Math.min(progress, 100) + '%';
-            
+
             if (state.count >= state.target) {
                 mainCounter.style.color = '#ffd700';
-                progressBar.style.background = '#ffd700';
-                progressBar.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+                progressBar.style.background = 'linear-gradient(90deg, #b8860b, #ffd700, #fff8dc)';
             } else {
-                mainCounter.style.color = '#00ff88';
-                progressBar.style.background = '#00ff88';
-                progressBar.style.boxShadow = '0 0 10px rgba(0, 255, 136, 0.5)';
+                mainCounter.style.color = '#e8a838';
+                progressBar.style.background = 'linear-gradient(90deg, #8b6914, #e8a838, #ffd700)';
             }
         }
 
-        // Increment Counter
+        // Round Complete
+        function showRoundComplete() {
+            roundComplete.classList.add('show');
+            setTimeout(() => roundComplete.classList.remove('show'), 2000);
+        }
+
+        // Completion
+        function triggerCompletion() {
+            mainBead.classList.add('completion');
+            soundWave.classList.add('active');
+            playCompletionChime();
+            setTimeout(() => {
+                mainBead.classList.remove('completion');
+                soundWave.classList.remove('active');
+            }, 3500);
+        }
+
+        // Increment
         function increment(e) {
             initAudio();
-            
-            state.history.push({...state});
+            state.history.push({ ...state });
             if (state.history.length > 50) state.history.shift();
-            
+
             state.count++;
             state.currentRound = ((state.count - 1) % state.roundSize) + 1;
-            
-            // Check round completion
+
             if (state.currentRound === state.roundSize) {
                 showRoundComplete();
             }
-            
-            // Check full completion
+
             if (state.count >= state.target) {
                 state.totalCompleted++;
                 triggerCompletion();
             }
-            
-            // Visual feedback
+
+            createRipple();
             if (e) {
                 const rect = mainBead.getBoundingClientRect();
-                const x = rect.left + rect.width / 2;
-                const y = rect.top + rect.height / 2;
-                createRipple(rect.width / 2, rect.height / 2);
-                spawnParticles(x, y);
+                spawnSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
             }
-            
+
             pulseDhikr();
             triggerHaptic();
-            playClickSound();
+            playCrystalSound();
             triggerLED();
-            
+            updateStats();
             updateDisplay();
-        }
-
-        // Completion Animation
-        function triggerCompletion() {
-            mainBead.classList.add('completion');
-            soundWave.classList.add('active');
-            
-            if (audioCtx) {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = 1200;
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + 0.3);
-            }
-            
-            setTimeout(() => {
-                mainBead.classList.remove('completion');
-                soundWave.classList.remove('active');
-            }, 3000);
         }
 
         // Undo
@@ -843,6 +1310,7 @@
             state.totalCompleted = prev.totalCompleted;
             state.dhikr = prev.dhikr;
             state.meaning = prev.meaning;
+            state.todayCount = Math.max(0, state.todayCount - 1);
             updateDhikrDisplay();
             updateDisplay();
         }
@@ -863,7 +1331,7 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 state.mode = btn.dataset.mode;
                 state.target = parseInt(btn.dataset.target);
                 state.roundSize = parseInt(btn.dataset.round);
@@ -872,57 +1340,189 @@
                 state.count = 0;
                 state.currentRound = 0;
                 state.history = [];
-                
+                state.usedModes.add(state.mode);
+
                 updateDhikrDisplay();
                 updateDisplay();
             });
         });
 
-        // Main Bead Events
+        // Bead Events
         mainBead.addEventListener('click', increment);
         mainBead.addEventListener('touchstart', (e) => {
             e.preventDefault();
             increment(e);
         });
 
-        // Control Buttons
+        // Controls
         document.getElementById('btn-undo').addEventListener('click', undo);
         document.getElementById('btn-reset').addEventListener('click', reset);
 
-        // Settings Modal
-        const modal = document.getElementById('settings-modal');
-        document.getElementById('btn-settings').addEventListener('click', () => {
-            modal.classList.add('active');
-        });
-        document.getElementById('btn-close-settings').addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
+        // Settings
+        const settingsModal = document.getElementById('settings-modal');
 
-        // Toggle Switches
+        function showSettings() {
+            settingsModal.classList.add('active');
+            renderWeeklyChart();
+            citySelector.value = state.currentCity;
+        }
+
+        function closeSettings() {
+            settingsModal.classList.remove('active');
+        }
+
+        document.getElementById('btn-settings').addEventListener('click', showSettings);
+
+        // Toggles
         document.querySelectorAll('.toggle').forEach(toggle => {
             toggle.addEventListener('click', () => {
                 toggle.classList.toggle('active');
-                const id = toggle.id;
-                const setting = id.replace('toggle-', '');
+                const setting = toggle.id.replace('toggle-', '');
                 state.settings[setting] = toggle.classList.contains('active');
-                
-                if (setting === 'meaning') {
-                    updateDhikrDisplay();
+                if (setting === 'meaning') updateDhikrDisplay();
+                if (setting === 'athan') {
+                    if (state.settings.athan) startAthanCheck();
+                    else stopAthanCheck();
                 }
             });
         });
 
+        // Change City
+        function changeCity(city) {
+            state.currentCity = city;
+            prayerTimes = prayerTimesDB[city];
+            saveData();
+        }
+
+        // Weekly Chart
+        function renderWeeklyChart() {
+            const chart = document.getElementById('weekly-chart');
+            chart.innerHTML = '';
+            const days = ['س', 'ح', 'ن', 'ث', 'أ', 'خ', 'ج'];
+            const today = new Date().getDay();
+            const maxVal = Math.max(...state.weekData, 1);
+
+            state.weekData.forEach((val, i) => {
+                const barContainer = document.createElement('div');
+                barContainer.style.textAlign = 'center';
+
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar' + (i === today ? ' today' : '');
+                bar.style.height = `${Math.max((val / maxVal) * 50, 4)}px`;
+
+                const label = document.createElement('div');
+                label.className = 'chart-label';
+                label.textContent = days[i];
+
+                barContainer.appendChild(bar);
+                barContainer.appendChild(label);
+                chart.appendChild(barContainer);
+            });
+        }
+
+        // Achievements
+        const achievementsModal = document.getElementById('achievements-modal');
+
+        function showAchievements() {
+            achievementsModal.classList.add('active');
+            renderAchievements();
+        }
+
+        function closeAchievements() {
+            achievementsModal.classList.remove('active');
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achievements-grid');
+            grid.innerHTML = '';
+
+            state.achievements.forEach(ach => {
+                const item = document.createElement('div');
+                item.className = 'achievement-item' + (state.unlockedAchievements.has(ach.id) ? ' unlocked' : '');
+                item.innerHTML = `
+                    <div class="ach-icon">${ach.icon}</div>
+                    <div class="ach-name">${ach.name}</div>
+                `;
+                grid.appendChild(item);
+            });
+
+            achievementsCountEl.textContent = `${toArabicNums(state.unlockedAchievements.size)}/${toArabicNums(state.achievements.length)}`;
+        }
+
+        // Athan System - OFFLINE
+        let athanInterval = null;
+        let prayerTimes = prayerTimesDB.cairo;
+
+        function initAthan() {
+            if (!state.settings.athan) return;
+            prayerTimes = prayerTimesDB[state.currentCity] || prayerTimesDB.cairo;
+            startAthanCheck();
+        }
+
+        function startAthanCheck() {
+            if (athanInterval) clearInterval(athanInterval);
+            athanInterval = setInterval(checkAthan, 30000);
+            checkAthan();
+        }
+
+        function stopAthanCheck() {
+            if (athanInterval) {
+                clearInterval(athanInterval);
+                athanInterval = null;
+            }
+        }
+
+        function checkAthan() {
+            if (!prayerTimes || !state.settings.athan) return;
+            const now = new Date();
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const prayers = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+            for (const prayer of prayers) {
+                if (prayerTimes[prayer] === currentTime) {
+                    showAthan(prayerNames[prayer]);
+                    break;
+                }
+            }
+        }
+
+        function showAthan(prayerName) {
+            document.getElementById('athan-prayer').textContent = prayerName;
+            athanBar.classList.add('show');
+            displayPanel.classList.add('athan-pushed');
+
+            if (state.settings.sound && audioCtx) {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.5);
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            }
+        }
+
+        function closeAthan() {
+            athanBar.classList.remove('show');
+            displayPanel.classList.remove('athan-pushed');
+        }
+
         // Session Timer
         function updateSessionTime() {
             const elapsed = Math.floor((Date.now() - state.sessionStart) / 1000);
-            const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            const hours = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
             sessionTime.textContent = `${hours}:${minutes}:${seconds}`;
         }
         setInterval(updateSessionTime, 1000);
 
-        // Keyboard Support
+        // Keyboard
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' || e.code === 'Enter') {
                 e.preventDefault();
@@ -932,14 +1532,29 @@
             }
         });
 
-        // Prevent sleep
+        // Wake Lock
         if (state.settings.lock && 'wakeLock' in navigator) {
-            navigator.wakeLock.request('screen').catch(() => {});
+            navigator.wakeLock.request('screen').catch(() => { });
         }
 
         // Initialize
+        loadData();
         updateDhikrDisplay();
         updateDisplay();
+        initAthan();
+
+        const saved = localStorage.getItem('tasbihData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (data.lastDate !== new Date().toDateString()) {
+                state.todayCount = 0;
+                saveData();
+            }
+        }
+
+        todayCountEl.textContent = toArabicNums(state.todayCount);
+        weekCountEl.textContent = toArabicNums(state.weekData.reduce((a, b) => a + b, 0));
+        achievementsCountEl.textContent = `${toArabicNums(state.unlockedAchievements.size)}/${toArabicNums(state.achievements.length)}`;
     </script>
 </body>
 </html>
